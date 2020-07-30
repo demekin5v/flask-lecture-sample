@@ -76,10 +76,13 @@ def edit(id):
     c.execute("SELECT task FROM task WHERE id = ?",(id,))
     py_task = c.fetchone()
     c.close()
-    print(py_task)
-    task = py_task[0]
-    py_item = {"dic_id":id,"dic_task":task}
-    return render_template("edit.html",html_task = py_item)
+    if py_task is None:
+        return "タスクがありません"
+    else:
+        print(py_task)
+        task = py_task[0]
+        py_item = {"dic_id":id,"dic_task":task}
+        return render_template("edit.html",html_task = py_item)
 
 @app.route("/edit",methods=['post'])
 def update_task():
