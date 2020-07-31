@@ -56,23 +56,28 @@ def app_post():
     py_task = request.form.get("task")
     conn = sqlite3.connect('flasktest.db')
     c = conn.cursor()
-    c.execute("INSERT INTO task VALUES (null,?)",(py_task,))
+    user_id = session["user_id"][0]
+    c.execute("INSERT INTO task VALUES (null,?,?)",(py_task,user_id,))
     conn.commit()
     c.close()
     return redirect('/list')
 
 @app.route('/list')
 def task_list():
-    conn = sqlite3.connect('flasktest.db')
-    c = conn.cursor()
-    c.execute("SELECT id ,task FROM task")
-    task_list_py = []
-    for row in c.fetchall():
-        task_list_py.append({"id":row[0],"task":row[1]})
-    c.close()
-    print(task_list_py)
     if "user_id" in session:
-        return render_template("tasklist.html",task_list = task_list_py)
+        user_id_py = session["user_id"][0]
+        conn = sqlite3.connect('flasktest.db')
+        c = conn.cursor()
+        c.execute("SELECT name FROM member WHERE id = ?",(user_id_py,))
+        user_name_py = c.fetchone()[0]
+        c.execute("SELECT id ,task FROM task WHERE user_id = ?",(user_id_py,))
+        task_list_py = []
+        for row in c.fetchall():
+            task_list_py.append({"id":row[0],"task":row[1]})
+        c.close()
+        print(task_list_py)
+    
+        return render_template("tasklist.html",task_list = task_list_py,user_name =user_name_py)
     else:
         return redirect("/login")
 
